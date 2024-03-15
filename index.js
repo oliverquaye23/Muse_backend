@@ -23,6 +23,12 @@ connection.connect((err) =>{
 
     });
 
+// Add new event
+
+function addNewEvent(){
+    const query = 'INSERT INTO  '
+}
+
 
 app.listen(3000,() => {
     console.log('Server configuration Succesfull...')
