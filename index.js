@@ -4,6 +4,9 @@ const bodyParser = require("body-parser");
 
 const app = express();
 
+app.use(bodyParser.json());
+
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Connection to the database
 
@@ -23,35 +26,68 @@ connection.connect((err) =>{
 
     });
 
-// Add new event
+// get all items in the database
 
+function getItems(){
+    query = "SELECT * FROM muse_database.events_table;"
+   
+    connection.query(query,(error,results) =>{
+        if (error) {
+            console.log("Error fetching items:" + error.stack);
+            return;
+        }
 
+        console.log('Items in the database:')
+        results.forEach((events_table) =>{
+            console.log(`ID: ${events_table.userId}, Title: ${events_table.title}, Venue: ${events_table.venue}`);
+        })
+    })
 
+}
 
 // Function to save user details in the database
-function saveDetails(name, password, callback) {
-    const query = 'INSERT INTO details (name, password) VALUES (?, ?)';
-    const values = [name, password];
+function saveDetails(username,password) {
+    const query = 'INSERT INTO users ( username,password) VALUES ( ?,?)';
+    const values = [username, password];
 
-    connection.query(query, values, (error, results, fields) => {
+    connection.query(query, values, (error) => {
         if (error) {
             console.error('Error inserting details:', error);
-            callback(error);
             return;
         }
         console.log('Details saved successfully');
-        callback(null, results);
     });
 }
 
+ 
+// Function to save event details in the database
+function save_event_details(userId, title,venue,datetime,description ) {
+    const query = 'INSERT INTO events_table (userId, title, venue,datetime,description) VALUES (?, ?, ?,?,?)';
+    const values = [userId, title,venue,datetime,description];
+
+    connection.query(query, values, (error, results) => {
+        if (error) {
+            console.error('Error inserting details:', error);
+            return;
+        }
+        console.log('Details saved successfully');
+        
+
+        getItems()
+    });
+}
+
+//saveDetails(3,"banku fair","my house","2024-5-13","sweet");
 
 
-
-// Endpoint to handle POST request to save user details
+// Endpoint to handle POST request to save user details for new registration
 app.post('/save-details', (req, res) => {
-    const { name, password } = req.body;
 
-    saveDetails(name, password, (error, results) => {
+    console.log("------------------------------")
+    console.log(req.body)
+    const { username, password } = req.body;
+   
+    saveDetails(username, password, (error, results) => {
         if (error) {
             res.status(500).json({ message: 'Failed to save details' });
             return;
